@@ -34,7 +34,7 @@ import {Scroll} from '../scroll/scroll';
  * ```ts
  * @Page({
  *  template: `
- *     <ion-slides pager (change)="onSlideChanged($event)" loop="true" autoplay="true">
+ *     <ion-slides pager (change)="onSlideChanged($event)" loop="true" autoplay="3000">
  *      <ion-slide>
  *        <h3>Thank you for choosing the Awesome App!</h3>
  *        <p>
@@ -60,7 +60,7 @@ import {Scroll} from '../scroll/scroll';
  *})
  *
  *```
- * @property {Boolean} [autoplay] - whether or not the slides should automatically change
+ * @property {Number} [autoplay] - enable autoplay if set w/ delay between transitions (in ms)
  * @property {Boolean} [loop] - whether the slides should loop from the last slide back to the first
  * @property {Boolean} [bounce] - whether the slides should bounce
  * @property {Number} [index] - The slide index to start on
@@ -120,7 +120,8 @@ export class Slides extends Ion {
 
 
     var options = util.defaults({
-      loop: this.loop,
+      loop: util.isTrueProperty(this.loop),
+      autoplay: parseInt(this.autoplay) || 0,
       pagination: '.swiper-pagination',
       paginationClickable: true,
       lazyLoading: true,

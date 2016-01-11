@@ -30,6 +30,7 @@ export function Swiper(container, params) {
           // autoplay
           autoplay: false,
           autoplayDisableOnInteraction: true,
+	  autoplayStopOnLast: false,
           // To support iOS's swipe-to-go-back gesture (when being used in-app, with UIWebView).
           iOSEdgeSwipeDetection: false,
           iOSEdgeSwipeThreshold: 20,
@@ -450,7 +451,7 @@ export function Swiper(container, params) {
                       s._slideNext();
                   }
                   else {
-                      if (!params.autoplayStopOnLast) {
+                      if (!s.params.autoplayStopOnLast) {
                           s._slideTo(0);
                       }
                       else {
@@ -3062,6 +3063,7 @@ export function Swiper(container, params) {
               s.preloadImages();
           }
           if (s.params.autoplay) {
+	      s.params.autoPlayStopOnLast = !s.params.loop;
               s.startAutoplay();
           }
           if (s.params.keyboardControl) {
