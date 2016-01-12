@@ -13,12 +13,21 @@ export function clamp(min, n, max) {
 }
 
 /**
- * Extend the destination with an arbitrary number of other objects.
- * @param dst the destination
- * @param ... the param objects
+ * The assign() method is used to copy the values of all enumerable own
+ * properties from one or more source objects to a target object. It will
+ * return the target object. When available, this method will use
+ * `Object.assign()` under-the-hood.
+ * @param target  The target object
+ * @param source(s)  The source object
  */
-export function extend(dst: any) {
-  return _baseExtend(dst, [].slice.call(arguments, 1), false);
+export function assign(...args: any[]): any {
+  if (typeof Object.assign !== 'function') {
+    // use the old-school shallow extend method
+    return _baseExtend(args[0], [].slice.call(args, 1), false);
+  }
+
+  // use the built in ES6 Object.assign method
+  return Object.assign.apply(null, args);
 }
 
 /**
@@ -26,7 +35,7 @@ export function extend(dst: any) {
  * @param dst the destination
  * @param ... the param objects
  */
-export function merge(dst: any) {
+export function merge(dst: any, ...args: any[]) {
   return _baseExtend(dst, [].slice.call(arguments, 1), true);
 }
 
@@ -81,7 +90,7 @@ export function debounce(func: any, wait: number, immediate: boolean) {
  * the first object.
  * @param the destination to apply defaults to.
  */
-export function defaults(dest) {
+export function defaults(dest, ...args: any[]) {
   for (let i = arguments.length - 1; i >= 1; i--) {
     let source = arguments[i] || {};
     for (let key in source) {
@@ -140,10 +149,10 @@ export const array = {
 }
 
 /**
- * Grab the query string param value for the given key.
- * @param key the key to look for
+ * Grab all query strings keys and values.
+ * @param url
  */
-export function getQuerystring(url, key) {
+export function getQuerystring(url: string): any {
   var queryParams = {};
   if (url) {
     const startIndex = url.indexOf('?');
@@ -153,9 +162,6 @@ export function getQuerystring(url, key) {
         var split = param.split('=');
         queryParams[split[0].toLowerCase()] = split[1].split('#')[0];
       });
-    }
-    if (key) {
-      return queryParams[key] || '';
     }
   }
   return queryParams;

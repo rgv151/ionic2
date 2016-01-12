@@ -1,15 +1,16 @@
 import {Menu} from './menu';
 import {SlideEdgeGesture} from '../../gestures/slide-edge-gesture';
 
-import * as util from '../../util';
+import {assign} from '../../util/util';
 
 export class MenuContentGesture extends SlideEdgeGesture {
   constructor(menu: Menu, targetEl: Element, options = {}) {
 
-    super(targetEl, util.extend({
+    super(targetEl, assign({
       direction: (menu.side === 'left' || menu.side === 'right') ? 'x' : 'y',
       edge: menu.side,
-      threshold: menu.threshold || 75
+      threshold: 0,
+      maxEdgeStart: menu.maxEdgeStart || 75
     }, options));
 
     this.menu = menu;
@@ -53,7 +54,7 @@ export class MenuContentGesture extends SlideEdgeGesture {
 export class TargetGesture extends MenuContentGesture {
   constructor(menu: Menu) {
     super(menu, menu.getNativeElement(), {
-      threshold: 0
+      maxEdgeStart: 0
     });
   }
 }

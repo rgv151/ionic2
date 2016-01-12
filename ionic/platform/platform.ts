@@ -1,4 +1,4 @@
-import {getQuerystring, extend} from '../util/util';
+import {getQuerystring, assign} from '../util/util';
 import {ready, windowDimensions, flushDimensionCache} from '../util/dom';
 
 
@@ -27,7 +27,7 @@ export class Platform {
   private _dir: string;
   private _lang: string;
   private _url: string;
-  private _qs: string;
+  private _qs: any;
   private _ua: string;
   private _bPlt: string;
   private _onResizes: Array<any>=[];
@@ -277,11 +277,15 @@ export class Platform {
   /**
   * @private
   */
+  setUrl(url) {
+    this._url = url;
+    this._qs = getQuerystring(url);
+  }
+
+  /**
+  * @private
+  */
   url(val) {
-    if (arguments.length) {
-      this._url = val;
-      this._qs = getQuerystring(val);
-    }
     return this._url;
   }
 
@@ -295,20 +299,28 @@ export class Platform {
   /**
   * @private
   */
+  setUserAgent(userAgent) {
+    this._ua = userAgent;
+  }
+
+  /**
+  * @private
+  */
   userAgent(val) {
-    if (arguments.length) {
-      this._ua = val;
-    }
     return this._ua || '';
   }
 
   /**
   * @private
   */
+  setNavigatorPlatform(navigatorPlatform) {
+    this._bPlt = navigatorPlatform;
+  }
+
+  /**
+  * @private
+  */
   navigatorPlatform(val) {
-    if (arguments.length) {
-      this._bPlt = val;
-    }
     return this._bPlt || '';
   }
 
@@ -501,8 +513,8 @@ export class Platform {
         // add the engine to the first in the platform hierarchy
         // the original rootPlatformNode now becomes a child
         // of the engineNode, which is not the new root
-        engineNode.child(rootPlatformNode);
-        rootPlatformNode.parent(engineNode);
+        engineNode.child = rootPlatformNode;
+        rootPlatformNode.parent = engineNode;
         rootPlatformNode = engineNode;
 
         // add any events which the engine would provide
@@ -510,21 +522,21 @@ export class Platform {
         let engineMethods = engineNode.methods();
         engineMethods._engineReady = engineMethods.ready;
         delete engineMethods.ready;
-        extend(this, engineMethods);
+        assign(this, engineMethods);
       }
 
       let platformNode = rootPlatformNode;
       while (platformNode) {
         insertSuperset(platformNode);
-        platformNode = platformNode.child();
+        platformNode = platformNode.child;
       }
 
       // make sure the root noot is actually the root
       // incase a node was inserted before the root
-      platformNode = rootPlatformNode.parent();
+      platformNode = rootPlatformNode.parent;
       while (platformNode) {
         rootPlatformNode = platformNode;
-        platformNode = platformNode.parent();
+        platformNode = platformNode.parent;
       }
 
       platformNode = rootPlatformNode;
@@ -537,7 +549,7 @@ export class Platform {
         this._versions[platformNode.name()] = platformNode.version(this);
 
         // go to the next platform child
-        platformNode = platformNode.child();
+        platformNode = platformNode.child;
       }
     }
 
@@ -554,14 +566,14 @@ export class Platform {
     // use it's getRoot method to build up its hierarchy
     // depending on which platforms match
     let platformNode = new PlatformNode(platformName);
-    let rootNode = platformNode.getRoot(this, 0);
+    let rootNode = platformNode.getRoot(this);
 
     if (rootNode) {
       rootNode.depth = 0;
-      let childPlatform = rootNode.child();
+      let childPlatform = rootNode.child;
       while (childPlatform) {
         rootNode.depth++;
-        childPlatform = childPlatform.child();
+        childPlatform = childPlatform.child;
       }
     }
     return rootNode;
@@ -575,20 +587,20 @@ function insertSuperset(platformNode) {
     // add a platform in between two exist platforms
     // so we can build the correct hierarchy of active platforms
     let supersetPlatform = new PlatformNode(supersetPlaformName);
-    supersetPlatform.parent(platformNode.parent());
-    supersetPlatform.child(platformNode);
-    if (supersetPlatform.parent()) {
-      supersetPlatform.parent().child(supersetPlatform);
+    supersetPlatform.parent = platformNode.parent;
+    supersetPlatform.child = platformNode;
+    if (supersetPlatform.parent) {
+      supersetPlatform.parent.child = supersetPlatform;
     }
-    platformNode.parent(supersetPlatform);
+    platformNode.parent = supersetPlatform;
   }
 }
 
 
 class PlatformNode {
   private c: any;
-  private _parent: PlatformNode;
-  private _child: PlatformNode;
+  public parent: PlatformNode;
+  public child: PlatformNode;
   public isEngine: boolean;
 
   constructor(platformName) {
@@ -610,20 +622,6 @@ class PlatformNode {
 
   methods() {
     return this.c.methods || {};
-  }
-
-  parent(val) {
-    if (arguments.length) {
-      this._parent = val;
-    }
-    return this._parent;
-  }
-
-  child(val) {
-    if (arguments.length) {
-      this._child = val;
-    }
-    return this._child;
   }
 
   isMatch(p): boolean {
@@ -666,11 +664,11 @@ class PlatformNode {
 
       for (let i = 0; i < parents.length; i++) {
         platform = new PlatformNode(parents[i]);
-        platform.child(this);
+        platform.child = this;
 
         rootPlatform = platform.getRoot(p);
         if (rootPlatform) {
-          this.parent(platform);
+          this.parent = platform;
           return rootPlatform;
         }
       }
